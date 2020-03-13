@@ -46,7 +46,7 @@ const RNCryptorSettings kRNCryptorAES256Settings = {
         .saltSize = 8,
         .PBKDFAlgorithm = kCCPBKDF2,
         .PRF = kCCPRFHmacAlgSHA1,
-        .rounds = 10000
+        .rounds = 1
     },
 
     .HMACKeySettings = {
@@ -54,7 +54,7 @@ const RNCryptorSettings kRNCryptorAES256Settings = {
         .saltSize = 8,
         .PBKDFAlgorithm = kCCPBKDF2,
         .PRF = kCCPRFHmacAlgSHA1,
-        .rounds = 10000
+        .rounds = 1
     }
 };
 
