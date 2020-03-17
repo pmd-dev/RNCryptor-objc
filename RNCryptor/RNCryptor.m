@@ -33,31 +33,6 @@
 #import <Security/SecRandom.h>
 #import <fcntl.h>
 
-const RNCryptorSettings kRNCryptorAES256Settings = {
-    .algorithm = kCCAlgorithmAES128,
-    .blockSize = kCCBlockSizeAES128,
-    .IVSize = kCCBlockSizeAES128,
-    .options = kCCOptionPKCS7Padding,
-    .HMACAlgorithm = kCCHmacAlgSHA256,
-    .HMACLength = CC_SHA256_DIGEST_LENGTH,
-
-    .keySettings = {
-        .keySize = kCCKeySizeAES256,
-        .saltSize = 8,
-        .PBKDFAlgorithm = kCCPBKDF2,
-        .PRF = kCCPRFHmacAlgSHA1,
-        .rounds = 1
-    },
-
-    .HMACKeySettings = {
-        .keySize = kCCKeySizeAES256,
-        .saltSize = 8,
-        .PBKDFAlgorithm = kCCPBKDF2,
-        .PRF = kCCPRFHmacAlgSHA1,
-        .rounds = 1
-    }
-};
-
 // Provide internal symbols for 10.6. These were made available in 10.7.
 #ifdef __MAC_OS_X_VERSION_MAX_ALLOWED
 #if __MAC_OS_X_VERSION_MAX_ALLOWED <= 1060

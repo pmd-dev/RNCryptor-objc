@@ -25,9 +25,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <CommonCrypto/CommonCryptor.h>
+#import <CommonCrypto/CommonKeyDerivation.h>
 #import <Security/Security.h>
-
-// NOTE: No CommonCrypto types may be used in this file. Swift can't handle them.
 
 extern NSString *const kRNCryptorErrorDomain;
 extern const uint8_t kRNCryptorFileVersion;
@@ -36,25 +36,73 @@ typedef struct _RNCryptorKeyDerivationSettings
 {
   size_t keySize;
   size_t saltSize;
-  /* CCPBKDFAlgorithm */ uint32_t PBKDFAlgorithm;
-  /* CCPseudoRandomAlgorithm */ uint32_t PRF;
+  CCPBKDFAlgorithm PBKDFAlgorithm;
+  CCPseudoRandomAlgorithm PRF;
   uint rounds;
   BOOL hasV2Password; // See Issue #77. V2 incorrectly handled multi-byte characters.
 } RNCryptorKeyDerivationSettings;
 
 typedef struct _RNCryptorSettings
 {
-  /* CCAlgorithm */ uint32_t algorithm;
+  CCAlgorithm algorithm;
   size_t blockSize;
   size_t IVSize;
-  /* CCOptions */ uint32_t options;
-  /* CCHmacAlgorithm */ uint32_t HMACAlgorithm;
+  CCOptions options;
+  CCHmacAlgorithm HMACAlgorithm;
   size_t HMACLength;
   RNCryptorKeyDerivationSettings keySettings;
   RNCryptorKeyDerivationSettings HMACKeySettings;
 } RNCryptorSettings;
 
-extern const RNCryptorSettings kRNCryptorAES256Settings;
+static const RNCryptorSettings kRNCryptorAES256Settings = {
+    .algorithm = kCCAlgorithmAES128,
+    .blockSize = kCCBlockSizeAES128,
+    .IVSize = kCCBlockSizeAES128,
+    .options = kCCOptionPKCS7Padding,
+    .HMACAlgorithm = kCCHmacAlgSHA256,
+    .HMACLength = CC_SHA256_DIGEST_LENGTH,
+
+    .keySettings = {
+        .keySize = kCCKeySizeAES256,
+        .saltSize = 8,
+        .PBKDFAlgorithm = kCCPBKDF2,
+        .PRF = kCCPRFHmacAlgSHA1,
+        .rounds = 10000
+    },
+
+    .HMACKeySettings = {
+        .keySize = kCCKeySizeAES256,
+        .saltSize = 8,
+        .PBKDFAlgorithm = kCCPBKDF2,
+        .PRF = kCCPRFHmacAlgSHA1,
+        .rounds = 10000
+    }
+};
+
+static const RNCryptorSettings kRNCryptorAES256SettingsText = {
+    .algorithm = kCCAlgorithmAES128,
+    .blockSize = kCCBlockSizeAES128,
+    .IVSize = kCCBlockSizeAES128,
+    .options = kCCOptionPKCS7Padding,
+    .HMACAlgorithm = kCCHmacAlgSHA256,
+    .HMACLength = CC_SHA256_DIGEST_LENGTH,
+    
+    .keySettings = {
+        .keySize = kCCKeySizeAES256,
+        .saltSize = 8,
+        .PBKDFAlgorithm = kCCPBKDF2,
+        .PRF = kCCPRFHmacAlgSHA1,
+        .rounds = 1
+    },
+    
+    .HMACKeySettings = {
+        .keySize = kCCKeySizeAES256,
+        .saltSize = 8,
+        .PBKDFAlgorithm = kCCPBKDF2,
+        .PRF = kCCPRFHmacAlgSHA1,
+        .rounds = 1
+    }
+};
 
 enum _RNCryptorOptions
 {
@@ -86,7 +134,7 @@ typedef void (^RNCryptorHandler)(RNCryptor *cryptor, NSData *data);
 @property (nonatomic, readonly, strong) NSError *error;
 @property (nonatomic, readonly, getter=isFinished) BOOL finished;
 @property (nonatomic, readonly, copy) RNCryptorHandler handler;
-@property (nonatomic, readwrite, assign) dispatch_queue_t responseQueue;
+@property (nonatomic, readwrite, strong) dispatch_queue_t responseQueue;
 
 - (void)addData:(NSData *)data;
 - (void)finish;
